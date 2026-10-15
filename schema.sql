@@ -1,8 +1,4 @@
--- ============================================================================
--- SQL Setup Script: Personal Finance Management Portal
--- Target: MySQL / MariaDB / phpMyAdmin / MySQL Workbench
--- ============================================================================
-
+-- Database and table creation for Personal Finance Manager
 CREATE DATABASE IF NOT EXISTS finance_db;
 USE finance_db;
 

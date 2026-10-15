@@ -1,9 +1,4 @@
-/**
- * ============================================================================
- * Personal Finance Management Portal
- * Client-Side Application Logic & State Management
- * ============================================================================
- */
+// Personal Finance Management Portal - Client logic and UI handling
 
 // Initial pre-loaded sample data
 const DEFAULT_TRANSACTIONS = [

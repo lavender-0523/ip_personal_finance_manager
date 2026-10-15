@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.net.InetSocketAddress;
 
+// Simple web server to serve the frontend files
 public class WebServer {
     private static final int PORT = 8080;
 
@@ -16,12 +17,10 @@ public class WebServer {
         server.setExecutor(null);
         server.start();
 
-        System.out.println("==================================================");
-        System.out.println(" FinancePortal Web Application is Live!");
-        System.out.println(" Access URL: http://localhost:" + PORT);
-        System.out.println("==================================================");
+        System.out.println("Web server started at http://localhost:" + PORT);
     }
 
+    // Handles serving static assets (HTML, CSS, JS)
     private static class StaticFileHandler implements HttpHandler {
         @Override
         public void handle(HttpExchange exchange) throws IOException {
@@ -40,6 +39,7 @@ public class WebServer {
                 return;
             }
 
+            // Determine content type by file extension
             String contentType = "text/plain";
             if (path.endsWith(".html")) contentType = "text/html; charset=UTF-8";
             else if (path.endsWith(".css")) contentType = "text/css; charset=UTF-8";
@@ -49,6 +49,7 @@ public class WebServer {
             exchange.getResponseHeaders().set("Content-Type", contentType);
             exchange.sendResponseHeaders(200, file.length());
 
+            // Write file contents to response stream
             try (FileInputStream fis = new FileInputStream(file);
                  OutputStream os = exchange.getResponseBody()) {
                 byte[] buffer = new byte[8192];

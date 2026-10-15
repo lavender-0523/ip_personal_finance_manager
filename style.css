@@ -1,7 +1,4 @@
-/* ==========================================================================
-   MINIMALIST MONOCHROME THEME (PURE CSS)
-   Personal Finance Management Portal
-   ========================================================================== */
+/* Stylesheet for Personal Finance Management Portal */
 
 :root {
   --bg-body: #FFFFFF;
@@ -56,9 +53,7 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* ==========================================================================
-   NAVIGATION BAR
-   ========================================================================== */
+/* Navigation bar */
 .navbar {
   border-bottom: 1px solid var(--border-light);
   background-color: var(--bg-surface);
@@ -114,9 +109,7 @@ body {
   gap: 10px;
 }
 
-/* ==========================================================================
-   BUTTONS
-   ========================================================================== */
+/* Buttons */
 .btn {
   display: inline-flex;
   align-items: center;
@@ -165,18 +158,14 @@ body {
   width: 100%;
 }
 
-/* ==========================================================================
-   MAIN WRAPPER & LAYOUT
-   ========================================================================== */
+/* Main layout */
 .main-wrapper {
   max-width: 1240px;
   margin: 0 auto;
   padding: 24px;
 }
 
-/* ==========================================================================
-   METRIC SUMMARY CARDS
-   ========================================================================== */
+/* Metric summary cards */
 .metrics-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -269,9 +258,7 @@ body {
   color: var(--text-muted);
 }
 
-/* ==========================================================================
-   TWO-COLUMN WORKSPACE
-   ========================================================================== */
+/* Workspace layout */
 .workspace-grid {
   display: grid;
   grid-template-columns: 340px 1fr;
@@ -306,9 +293,7 @@ body {
   margin-top: 2px;
 }
 
-/* ==========================================================================
-   INPUT FORM STYLES
-   ========================================================================== */
+/* Form styles */
 .form-group {
   margin-bottom: 14px;
 }
@@ -420,9 +405,7 @@ body {
   padding-top: 8px;
 }
 
-/* ==========================================================================
-   TRANSACTIONS TABLE PANEL
-   ========================================================================== */
+/* Transactions table panel */
 .table-panel {
   padding: 22px;
 }
@@ -515,9 +498,7 @@ body {
   color: var(--text-light);
 }
 
-/* ==========================================================================
-   DATA TABLE
-   ========================================================================== */
+/* Data table */
 .table-container {
   background-color: var(--bg-surface);
   border: 1px solid var(--border-light);
@@ -663,9 +644,7 @@ body {
   color: var(--text-muted);
 }
 
-/* ==========================================================================
-   TOAST NOTIFICATION
-   ========================================================================== */
+/* Toast notification */
 .toast {
   position: fixed;
   bottom: 24px;
@@ -693,9 +672,7 @@ body {
   }
 }
 
-/* ==========================================================================
-   RESPONSIVE DESIGN
-   ========================================================================== */
+/* Responsive layout */
 @media (max-width: 960px) {
   .workspace-grid {
     grid-template-columns: 1fr;

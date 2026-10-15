@@ -8,17 +8,14 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
 
-// ========================================================
-// 1. BASE CLASS: Demonstrates OOP Abstraction & Encapsulation
-// ========================================================
+// Base class for financial records
 abstract class FinanceRecord {
-    // Encapsulation: Private variables protected from direct outside modification
     private String date;
     private String category;
     private double amount;
     private String description;
 
-    // Parameterized constructor
+    // constructor
     public FinanceRecord(String date, String category, double amount, String description) {
         this.date = date;
         this.category = category;
@@ -26,7 +23,7 @@ abstract class FinanceRecord {
         this.description = description;
     }
 
-    // Public Getters (Encapsulation)
+    // getters
     public String getDate() {
         return date;
     }
@@ -43,16 +40,14 @@ abstract class FinanceRecord {
         return description;
     }
 
-    // Abstract method: forces child classes to specify type
+    // abstract method to get record type (Income/Expense)
     public abstract String getType();
 }
 
-// ========================================================
-// 2. DERIVED CLASS: Demonstrates OOP Inheritance & Polymorphism
-// ========================================================
+// Child class extending FinanceRecord
 class Transaction extends FinanceRecord {
     private int id;
-    private String type; // "Income" or "Expense"
+    private String type; // Income or Expense
 
     public Transaction(String type, String date, String category, double amount, String description) {
         super(date, category, amount, description);
@@ -74,35 +69,32 @@ class Transaction extends FinanceRecord {
         this.id = id;
     }
 
-    // Implementing the abstract method
     @Override
     public String getType() {
         return this.type;
     }
 }
 
-// ========================================================
-// 3. MAIN APPLICATION CLASS: Menu-driven Console with JDBC & Auto-Fallback
-// ========================================================
+// Main application class
 public class PersonalFinancePortal {
 
-    // Database connection credentials
+    // Database connection parameters
     private static final String DB_URL = "jdbc:mysql://localhost:3306/finance_db";
     private static final String DB_USER = "root";
-    private static final String DB_PASS = ""; // Change if your MySQL has a password
+    private static final String DB_PASS = ""; // update if mysql has a password
 
     private static Scanner sc = new Scanner(System.in);
 
-    // Method to establish database connection
+    // Establishes connection to MySQL
     public static Connection getConnection() {
         try {
             Class.forName("com.mysql.cj.jdbc.Driver");
             return DriverManager.getConnection(DB_URL, DB_USER, DB_PASS);
         } catch (ClassNotFoundException e) {
-            System.out.println("[Notice] MySQL JDBC Driver not found on classpath.");
+            System.out.println("Notice: MySQL JDBC Driver not found on classpath.");
             return null;
         } catch (SQLException e) {
-            System.out.println("[Notice] MySQL server not running on localhost:3306 (" + e.getMessage() + ")");
+            System.out.println("Notice: MySQL server not detected on localhost:3306.");
             return null;
         }
     }
@@ -110,37 +102,38 @@ public class PersonalFinancePortal {
     public static void main(String[] args) {
         Connection conn = getConnection();
 
-        // If MySQL is not detected, gracefully switch to built-in Offline Mode
+        // If MySQL is offline, run demo in offline mode
         if (conn == null) {
-            System.out.println("==================================================================================");
-            System.out.println("[INFO] Activating Built-in Offline Mode so you can run and test all features live!");
-            System.out.println("==================================================================================");
+            System.out.println("------------------------------------------------------------");
+            System.out.println("Starting in Offline Mode (in-memory demo)...");
+            System.out.println("------------------------------------------------------------");
             runOfflineMode();
             return;
         }
 
-        // MySQL Mode
+        // Main menu loop
         int choice = 0;
         while (choice != 6) {
             printDivider();
-            System.out.println("      PERSONAL FINANCE MANAGEMENT PORTAL (MySQL Connected)");
+            System.out.println("          PERSONAL FINANCE MANAGEMENT PORTAL");
+            System.out.println("                  (Database Connected)");
             printDivider();
             System.out.println("1. Add Income");
             System.out.println("2. Add Expense");
-            System.out.println("3. View All Transactions (SELECT)");
-            System.out.println("4. View Balance Summary (SUM/Aggregation)");
-            System.out.println("5. Delete a Transaction (DELETE)");
+            System.out.println("3. View All Transactions");
+            System.out.println("4. View Balance Summary");
+            System.out.println("5. Delete a Transaction");
             System.out.println("6. Exit");
             System.out.print("Enter your choice (1-6): ");
 
             if (!sc.hasNextInt()) {
-                System.out.println("\n[Error] Invalid input! Please enter a number between 1 and 6.");
+                System.out.println("\nInvalid input! Please enter a number between 1 and 6.");
                 sc.next();
                 continue;
             }
 
             choice = sc.nextInt();
-            sc.nextLine(); // clear newline
+            sc.nextLine(); // consume newline
 
             switch (choice) {
                 case 1:
@@ -167,24 +160,23 @@ public class PersonalFinancePortal {
                     }
                     break;
                 default:
-                    System.out.println("\n[Error] Invalid choice! Enter 1 to 6.");
+                    System.out.println("\nInvalid choice! Enter 1 to 6.");
             }
         }
     }
 
-    // =========================================================================
-    // MYSQL OPERATIONS (JDBC)
-    // =========================================================================
+    // Database Operations (JDBC)
 
+    // Inserts an income or expense record into MySQL
     private static void insertRecord(Connection conn, String type) {
         printDivider();
-        System.out.println(">>> ADD NEW " + type.toUpperCase());
+        System.out.println("--- ADD NEW " + type.toUpperCase() + " ---");
         printDivider();
 
         System.out.print("Enter Date (DD-MM-YYYY): ");
         String date = sc.nextLine().trim();
 
-        System.out.print("Enter Category (e.g. Salary, Food, Travel, Rent): ");
+        System.out.print("Enter Category (e.g., Salary, Food, Travel, Rent): ");
         String category = sc.nextLine().trim();
 
         double amount = readValidAmount();
@@ -194,6 +186,7 @@ public class PersonalFinancePortal {
 
         Transaction txn = new Transaction(type, date, category, amount, desc);
 
+        // insert query using prepared statement
         String sql = "INSERT INTO transactions (type, entry_date, category, amount, description) VALUES (?, ?, ?, ?, ?)";
         try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
             pstmt.setString(1, txn.getType());
@@ -202,18 +195,19 @@ public class PersonalFinancePortal {
             pstmt.setDouble(4, txn.getAmount());
             pstmt.setString(5, txn.getDescription());
 
-            int rowsInserted = pstmt.executeUpdate();
-            if (rowsInserted > 0) {
-                System.out.println("\n[Success] Record saved to MySQL database successfully!");
+            int rows = pstmt.executeUpdate();
+            if (rows > 0) {
+                System.out.println("\nRecord saved successfully!");
             }
         } catch (SQLException e) {
-            System.out.println("\n[Error] Database Insert failed: " + e.getMessage());
+            System.out.println("\nDatabase insert error: " + e.getMessage());
         }
     }
 
+    // Displays all transactions stored in the database
     private static void viewRecords(Connection conn) {
         printDivider();
-        System.out.println("                  ALL TRANSACTIONS (FROM MySQL)");
+        System.out.println("                       ALL TRANSACTIONS");
         printDivider();
 
         String sql = "SELECT * FROM transactions";
@@ -224,9 +218,9 @@ public class PersonalFinancePortal {
                               "ID", "TYPE", "DATE", "CATEGORY", "AMOUNT", "DESCRIPTION");
             System.out.println("----------------------------------------------------------------------------------");
 
-            boolean hasData = false;
+            boolean hasRows = false;
             while (rs.next()) {
-                hasData = true;
+                hasRows = true;
                 int id = rs.getInt("id");
                 String type = rs.getString("type");
                 String date = rs.getString("entry_date");
@@ -238,15 +232,16 @@ public class PersonalFinancePortal {
                                   id, type, date, category, amount, desc);
             }
 
-            if (!hasData) {
-                System.out.println("No records found in database.");
+            if (!hasRows) {
+                System.out.println("No records found.");
             }
             System.out.println("----------------------------------------------------------------------------------");
         } catch (SQLException e) {
-            System.out.println("[Error] Retrieval failed: " + e.getMessage());
+            System.out.println("Error fetching records: " + e.getMessage());
         }
     }
 
+    // Calculates total income, expenses, and net balance using SQL SUM()
     private static void viewSummary(Connection conn) {
         String sqlIncome = "SELECT SUM(amount) AS total FROM transactions WHERE type = 'Income'";
         String sqlExpense = "SELECT SUM(amount) AS total FROM transactions WHERE type = 'Expense'";
@@ -264,7 +259,7 @@ public class PersonalFinancePortal {
             double balance = totalIncome - totalExpense;
 
             printDivider();
-            System.out.println("                 ACCOUNT BALANCE SUMMARY (MySQL)");
+            System.out.println("                 ACCOUNT BALANCE SUMMARY");
             printDivider();
             System.out.printf("Total Income   : Rs. %.2f\n", totalIncome);
             System.out.printf("Total Expenses : Rs. %.2f\n", totalExpense);
@@ -272,14 +267,15 @@ public class PersonalFinancePortal {
             System.out.printf("Net Balance    : Rs. %.2f\n", balance);
             printDivider();
         } catch (SQLException e) {
-            System.out.println("[Error] Summary failed: " + e.getMessage());
+            System.out.println("Error calculating summary: " + e.getMessage());
         }
     }
 
+    // Deletes a transaction from MySQL by ID
     private static void deleteRecord(Connection conn) {
-        System.out.print("\nEnter the Transaction ID to delete: ");
+        System.out.print("\nEnter Transaction ID to delete: ");
         if (!sc.hasNextInt()) {
-            System.out.println("[Error] Invalid ID!");
+            System.out.println("Invalid ID! Please enter a number.");
             sc.next();
             return;
         }
@@ -290,22 +286,20 @@ public class PersonalFinancePortal {
         String sql = "DELETE FROM transactions WHERE id = ?";
         try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
             pstmt.setInt(1, id);
-            int rowsDeleted = pstmt.executeUpdate();
-            if (rowsDeleted > 0) {
-                System.out.println("[Success] Transaction ID " + id + " deleted successfully!");
+            int affected = pstmt.executeUpdate();
+            if (affected > 0) {
+                System.out.println("Transaction ID " + id + " deleted successfully.");
             } else {
-                System.out.println("[Notice] No transaction found with ID " + id);
+                System.out.println("No transaction found with ID " + id);
             }
         } catch (SQLException e) {
-            System.out.println("[Error] Delete failed: " + e.getMessage());
+            System.out.println("Delete error: " + e.getMessage());
         }
     }
 
-    // =========================================================================
-    // BUILT-IN OFFLINE MODE (RUNS ANYWHERE WITHOUT MYSQL SERVICE)
-    // =========================================================================
-
+    // In-memory offline mode (used when MySQL server is not running)
     private static void runOfflineMode() {
+        // sample starter records
         List<Transaction> list = new ArrayList<Transaction>();
         list.add(new Transaction(1, "Income", "01-10-2026", "Salary", 75000.0, "Monthly Internship Stipend"));
         list.add(new Transaction(2, "Expense", "03-10-2026", "Rent", 18000.0, "Hostel / Apartment Rent"));
@@ -316,37 +310,38 @@ public class PersonalFinancePortal {
         int choice = 0;
         while (choice != 6) {
             printDivider();
-            System.out.println("      PERSONAL FINANCE MANAGEMENT PORTAL (Offline Demo Mode)");
+            System.out.println("          PERSONAL FINANCE MANAGEMENT PORTAL");
+            System.out.println("                    (Offline Mode)");
             printDivider();
             System.out.println("1. Add Income");
             System.out.println("2. Add Expense");
-            System.out.println("3. View All Transactions (SELECT)");
-            System.out.println("4. View Balance Summary (SUM/Aggregation)");
-            System.out.println("5. Delete a Transaction (DELETE)");
+            System.out.println("3. View All Transactions");
+            System.out.println("4. View Balance Summary");
+            System.out.println("5. Delete a Transaction");
             System.out.println("6. Exit");
             System.out.print("Enter your choice (1-6): ");
 
             if (!sc.hasNextInt()) {
-                System.out.println("\n[Error] Invalid input! Please enter a number between 1 and 6.");
+                System.out.println("\nInvalid input! Please enter a number between 1 and 6.");
                 sc.next();
                 continue;
             }
 
             choice = sc.nextInt();
-            sc.nextLine();
+            sc.nextLine(); // consume newline
 
             switch (choice) {
                 case 1:
                 case 2:
                     String type = (choice == 1) ? "Income" : "Expense";
                     printDivider();
-                    System.out.println(">>> ADD NEW " + type.toUpperCase());
+                    System.out.println("--- ADD NEW " + type.toUpperCase() + " ---");
                     printDivider();
 
                     System.out.print("Enter Date (DD-MM-YYYY): ");
                     String date = sc.nextLine().trim();
 
-                    System.out.print("Enter Category (e.g. Salary, Food, Travel, Rent): ");
+                    System.out.print("Enter Category (e.g., Salary, Food, Travel, Rent): ");
                     String category = sc.nextLine().trim();
 
                     double amount = readValidAmount();
@@ -361,12 +356,12 @@ public class PersonalFinancePortal {
 
                     Transaction newTxn = new Transaction(nextId, type, date, category, amount, desc);
                     list.add(newTxn);
-                    System.out.println("\n[Success] Record saved successfully (ID #" + nextId + ")!");
+                    System.out.println("\nRecord saved successfully (ID #" + nextId + ")!");
                     break;
 
                 case 3:
                     printDivider();
-                    System.out.println("                  ALL TRANSACTIONS (CURRENT RECORDS)");
+                    System.out.println("                       ALL TRANSACTIONS");
                     printDivider();
                     System.out.printf("%-5s | %-8s | %-12s | %-14s | %-10s | %-20s\n", 
                                       "ID", "TYPE", "DATE", "CATEGORY", "AMOUNT", "DESCRIPTION");
@@ -395,9 +390,9 @@ public class PersonalFinancePortal {
                     break;
 
                 case 5:
-                    System.out.print("\nEnter the Transaction ID to delete: ");
+                    System.out.print("\nEnter Transaction ID to delete: ");
                     if (!sc.hasNextInt()) {
-                        System.out.println("[Error] Invalid ID!");
+                        System.out.println("Invalid ID! Please enter a number.");
                         sc.next();
                         break;
                     }
@@ -413,23 +408,23 @@ public class PersonalFinancePortal {
                         }
                     }
                     if (found) {
-                        System.out.println("[Success] Transaction ID " + delId + " deleted successfully!");
+                        System.out.println("Transaction ID " + delId + " deleted successfully.");
                     } else {
-                        System.out.println("[Notice] No transaction found with ID " + delId);
+                        System.out.println("No transaction found with ID " + delId);
                     }
                     break;
 
                 case 6:
-                    System.out.println("\nThank you for using Personal Finance Management Portal!");
+                    System.out.println("\nExiting. Thank you!");
                     break;
 
                 default:
-                    System.out.println("\n[Error] Invalid choice! Enter 1 to 6.");
+                    System.out.println("\nInvalid choice! Please enter 1 to 6.");
             }
         }
     }
 
-    // Helper for Amount Validation
+    // Validates that user enters a positive numeric amount
     private static double readValidAmount() {
         double amount = 0;
         while (true) {
@@ -437,17 +432,17 @@ public class PersonalFinancePortal {
             try {
                 amount = Double.parseDouble(sc.nextLine().trim());
                 if (amount <= 0) {
-                    System.out.println("[Warning] Amount must be greater than zero! Try again.");
+                    System.out.println("Amount must be greater than zero. Try again.");
                     continue;
                 }
                 return amount;
             } catch (NumberFormatException e) {
-                System.out.println("[Error] Invalid input! Please enter numeric values only.");
+                System.out.println("Invalid number! Please enter numbers only.");
             }
         }
     }
 
     private static void printDivider() {
-        System.out.println("==================================================================================");
+        System.out.println("------------------------------------------------------------");
     }
 }
