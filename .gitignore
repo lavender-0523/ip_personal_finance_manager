@@ -1,0 +1,3 @@
+*.class
+.system_generated/
+*.log

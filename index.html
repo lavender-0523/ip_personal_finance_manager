@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Personal Finance Management Portal</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- Top Navigation Header -->
+  <header class="navbar">
+    <div class="nav-container">
+      <div class="brand">
+        <div class="brand-icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+          </svg>
+        </div>
+        <div>
+          <h1 class="brand-title">FinancePortal</h1>
+          <p class="brand-tagline">Personal Cashflow & Expense Tracker</p>
+        </div>
+      </div>
+      <div class="nav-actions">
+        <button id="btnExportCsv" class="btn btn-secondary">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+            <polyline points="7 10 12 15 17 10"/>
+            <line x1="12" y1="15" x2="12" y2="3"/>
+          </svg>
+          Export CSV
+        </button>
+        <button id="btnResetData" class="btn btn-secondary" title="Restore sample transactions">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="1 4 1 10 7 10"/>
+            <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/>
+          </svg>
+          Reset Demo
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content Container -->
+  <main class="main-wrapper">
+
+    <!-- Dashboard Metric Summary Cards -->
+    <section class="metrics-grid">
+      <div class="metric-card">
+        <div class="metric-top">
+          <span class="metric-label">Total Income</span>
+          <span class="badge badge-income">Inflow</span>
+        </div>
+        <div class="metric-value" id="valTotalIncome">Rs. 0.00</div>
+        <div class="metric-sub" id="countIncome">0 incoming transactions</div>
+      </div>
+
+      <div class="metric-card">
+        <div class="metric-top">
+          <span class="metric-label">Total Expenses</span>
+          <span class="badge badge-expense">Outflow</span>
+        </div>
+        <div class="metric-value" id="valTotalExpense">Rs. 0.00</div>
+        <div class="metric-sub" id="countExpense">0 outgoing transactions</div>
+      </div>
+
+      <div class="metric-card" id="cardNetBalance">
+        <div class="metric-top">
+          <span class="metric-label" id="labelBalanceHeading">Net Balance</span>
+          <span class="badge badge-balance" id="badgeBalanceStatus">Surplus</span>
+        </div>
+        <div class="metric-value" id="valNetBalance">Rs. 0.00</div>
+        <div class="metric-sub" id="subBalanceNote">Calculated as (Income − Expenses)</div>
+      </div>
+    </section>
+
+    <!-- Two-Column Functional Workspace -->
+    <section class="workspace-grid">
+
+      <!-- Left Column: New Transaction Form -->
+      <aside class="panel-card form-panel">
+        <div class="panel-header">
+          <h2 class="panel-title">Add Transaction</h2>
+          <span class="panel-caption">Record a cash inflow or expense</span>
+        </div>
+
+        <form id="transactionForm" novalidate>
+          <!-- Segmented Type Selector -->
+          <div class="form-group">
+            <label class="form-label">Transaction Type</label>
+            <div class="segmented-control">
+              <button type="button" class="segment-btn active" data-type="Expense" id="segExpense">
+                <span class="dot dot-expense"></span> Expense
+              </button>
+              <button type="button" class="segment-btn" data-type="Income" id="segIncome">
+                <span class="dot dot-income"></span> Income
+              </button>
+            </div>
+            <input type="hidden" id="txType" value="Expense">
+          </div>
+
+          <!-- Category Selection -->
+          <div class="form-group">
+            <label for="txCategory" class="form-label">Category</label>
+            <div class="select-wrapper">
+              <select id="txCategory" class="form-control" required></select>
+            </div>
+          </div>
+
+          <!-- Amount Input -->
+          <div class="form-group">
+            <label for="txAmount" class="form-label">Amount (INR)</label>
+            <div class="input-prefix-wrapper">
+              <span class="input-prefix">Rs.</span>
+              <input type="number" id="txAmount" class="form-control has-prefix" placeholder="0.00" step="0.01" min="0.01" required>
+            </div>
+            <small class="field-hint">Must be a strictly positive number</small>
+          </div>
+
+          <!-- Date Input -->
+          <div class="form-group">
+            <label for="txDate" class="form-label">Transaction Date</label>
+            <input type="date" id="txDate" class="form-control" required>
+          </div>
+
+          <!-- Description / Notes -->
+          <div class="form-group">
+            <label for="txDescription" class="form-label">Description / Note</label>
+            <input type="text" id="txDescription" class="form-control" placeholder="e.g. Monthly Grocery or Stipend" maxlength="100">
+          </div>
+
+          <!-- Action Buttons -->
+          <div class="form-actions">
+            <button type="submit" class="btn btn-primary btn-block">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="12" y1="5" x2="12" y2="19"/>
+                <line x1="5" y1="12" x2="19" y2="12"/>
+              </svg>
+              Save Transaction
+            </button>
+            <button type="button" id="btnClearForm" class="btn btn-secondary btn-block">
+              Clear
+            </button>
+          </div>
+        </form>
+      </aside>
+
+      <!-- Right Column: Transactions Data Table -->
+      <section class="panel-card table-panel">
+        <div class="table-toolbar">
+          <div class="toolbar-left">
+            <h2 class="panel-title">Transaction Ledger</h2>
+            <span class="counter-badge" id="txCountBadge">0 records</span>
+          </div>
+
+          <div class="toolbar-right">
+            <!-- Search Box -->
+            <div class="search-box">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="11" cy="11" r="8"/>
+                <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+              </svg>
+              <input type="text" id="searchInput" placeholder="Search category or note...">
+            </div>
+
+            <!-- Filter Buttons -->
+            <div class="filter-pills">
+              <button class="pill-btn active" data-filter="ALL">All</button>
+              <button class="pill-btn" data-filter="INCOME">Income</button>
+              <button class="pill-btn" data-filter="EXPENSE">Expense</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Table Container -->
+        <div class="table-container">
+          <table class="data-table" id="transactionsTable">
+            <thead>
+              <tr>
+                <th style="width: 55px;" class="col-center">#</th>
+                <th style="width: 95px;" class="col-center">Type</th>
+                <th style="width: 110px;" class="col-center">Date</th>
+                <th style="width: 150px;">Category</th>
+                <th style="width: 120px;" class="col-right">Amount</th>
+                <th>Description</th>
+                <th style="width: 80px;" class="col-center">Action</th>
+              </tr>
+            </thead>
+            <tbody id="tableBody">
+              <!-- Dynamically populated via JavaScript -->
+            </tbody>
+          </table>
+
+          <!-- Empty State Display -->
+          <div id="emptyState" class="empty-state" style="display: none;">
+            <div class="empty-icon">
+              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="2" y="5" width="20" height="14" rx="2"/>
+                <line x1="2" y1="10" x2="22" y2="10"/>
+              </svg>
+            </div>
+            <h3 class="empty-title">No transactions recorded</h3>
+            <p class="empty-text">Fill in the form on the left to record your first transaction.</p>
+          </div>
+        </div>
+      </section>
+
+    </section>
+
+  </main>
+
+  <!-- Notification Toast -->
+  <div id="toastNotification" class="toast">
+    <span id="toastMessage">Action completed successfully</span>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
